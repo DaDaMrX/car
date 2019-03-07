@@ -10,6 +10,7 @@ import logging
 
 import easyto.intent_classifier.main
 import thulac
+import spacy
 
 
 logger = logging.getLogger(__name__)
@@ -142,17 +143,42 @@ class RnnNLU:
         return respose
 
 
+class Ner:
+
+    def __init__(self, model_dir:str):
+        names = os.listdir(model_dir)
+        for index, name in enumerate(names):
+            logger.info('Ner - loading model (%d/%d): %s' % (index + 1, len(names), name))
+            model_path = os.path.join(model_dir, name)
+            self.models[name] = spacy.load(model_path)
+
+    def parse(self, model_name:str, text:str):
+        assert model_name in self.models.keys()
+        doc = self.models[model_name](text)
+        entities = []
+        for value, entity in doc.ents:
+            d = {
+                'value': value,
+                'entity': entity,
+            }
+            entities.append(d)
+        return entities
+
+
 class HybridNLU:
 
     def __init__(self, models=None):
         if isinstance(models, str):
             models = [models]
         assert isinstance(models, typing.Iterable)
+        self.models = models
 
         if 'rasa' in models:
             self.rasa_nlu = RasaNLU('rasa_models')
         if 'rnn' in models:
             self.rnn_nlu = RnnNLU('easyto/intent_classifier/models')
+        if 'ner' in models:
+            self.ner = Ner('ner')
 
     def parse(self, data):
         assert data.get('model') is not None
@@ -164,4 +190,7 @@ class HybridNLU:
             respose = self.rasa_nlu.parse(data['text'])
         elif data['model'] == 'rnn':
             respose = self.rnn_nlu.parse(data['text'])
+        if 'ner' in self.models:
+            scene = respose['scene']
+            respose['entities']['nlu_result'] = self.ner.parse(scene, data['text'])
         return respose
