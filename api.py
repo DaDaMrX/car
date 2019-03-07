@@ -3,15 +3,14 @@ NLU api (rasa and rnn)
 Author: Heng-Da Xu <dadamrxx@gmail.com>
 Modify: 2/23/2019
 '''
+import logging
 import os
 import typing
-import rasa_nlu.model
-import logging
 
 import easyto.intent_classifier.main
-import thulac
+import rasa_nlu.model
 import spacy
-
+import thulac
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -153,11 +152,13 @@ class Ner:
             self.models[name] = spacy.load(model_path)
 
     def parse(self, model_name:str, text:str):
+        logger.info('Ner - model name: %s' % model_name)
         if model_name not in self.models.keys():
             return []
         doc = self.models[model_name](text)
         entities = []
         for value, entity in doc.ents:
+            logger.info('Ner - value: %s, entity: %s' % (value, entity))
             d = {
                 'value': value,
                 'entity': entity,
@@ -179,7 +180,7 @@ class HybridNLU:
         if 'rnn' in models:
             self.rnn_nlu = RnnNLU('easyto/intent_classifier/models')
         if 'ner' in models:
-            self.ner = Ner('ner')
+            self.ner = Ner('ner_models')
 
     def parse(self, data):
         assert data.get('model') is not None
