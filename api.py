@@ -146,6 +146,7 @@ class Ner:
 
     def __init__(self, model_dir:str):
         names = os.listdir(model_dir)
+        self.models = {}
         for index, name in enumerate(names):
             logger.info('Ner - loading model (%d/%d): %s' % (index + 1, len(names), name))
             model_path = os.path.join(model_dir, name)
@@ -157,11 +158,11 @@ class Ner:
             return []
         doc = self.models[model_name](text)
         entities = []
-        for value, entity in doc.ents:
-            logger.info('Ner - value: %s, entity: %s' % (value, entity))
+        for ent in doc.ents:
+            logger.info('Ner - value: %s, entity: %s' % (ent.text, ent.label_))
             d = {
-                'value': value,
-                'entity': entity,
+                'value': ent.text,
+                'entity': ent.label_,
             }
             entities.append(d)
         return entities
