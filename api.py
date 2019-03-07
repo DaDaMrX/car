@@ -195,5 +195,5 @@ class HybridNLU:
             respose = self.rnn_nlu.parse(data['text'])
         if 'ner' in self.models:
             scene = respose['scene']
-            respose['entities']['nlu_result'] = self.ner.parse(scene, data['text'])
+            respose['nlu_result']['entities'] = self.ner.parse(scene, data['text'])
         return respose
