@@ -153,7 +153,8 @@ class Ner:
             self.models[name] = spacy.load(model_path)
 
     def parse(self, model_name:str, text:str):
-        assert model_name in self.models.keys()
+        if model_name not in self.models.keys():
+            return []
         doc = self.models[model_name](text)
         entities = []
         for value, entity in doc.ents:

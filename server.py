@@ -5,7 +5,7 @@ import api
 
 
 app = flask.Flask(__name__)
-nlu = api.HybridNLU(['rasa', 'rnn'])
+nlu = api.HybridNLU(['rasa', 'rnn', 'ner'])
 
 
 @app.route('/', methods=['GET'])
